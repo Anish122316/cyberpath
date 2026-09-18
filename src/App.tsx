@@ -224,10 +224,10 @@ export default function App() {
     );
   }, [skills, user.completedLabs, user.assessmentCompleted, user.solvedChallenges, user.interviewScore, atsResult, user]);
 
-  // Handler: Google Sign-in Success
+  // Handler: Account Sign-in Success (Personal Email or Google)
   const handleGoogleLoginSuccess = (profile: Partial<UserProfile>) => {
     const email = profile.email || 'anishkr649world@gmail.com';
-    const name = profile.name || 'Anish Kumar';
+    const name = profile.name || 'Learner';
 
     try {
       const savedData = localStorage.getItem(`cyberpath_user_${email}`);
@@ -236,7 +236,7 @@ export default function App() {
         setUser(parsed.user);
         setSkills(parsed.skills);
         localStorage.setItem('cyberpath_active_email', email);
-        notifyLedger(`Welcome back, ${name}! Restored your verified learning ledger.`);
+        notifyLedger(`Welcome back, ${name}! Restored your verified learning ledger for ${email}.`);
         setCurrentTab('dashboard');
         return;
       }
@@ -247,7 +247,7 @@ export default function App() {
     // Fresh user initialization (0% skills, 0 XP, Level 0)
     const newUser: UserProfile = {
       ...INITIAL_USER,
-      id: `usr-google-${Date.now()}`,
+      id: `usr-${Date.now()}`,
       name,
       email,
       isLoggedIn: true,
@@ -269,7 +269,7 @@ export default function App() {
       JSON.stringify({ user: newUser, skills: INITIAL_SKILLS })
     );
 
-    notifyLedger(`Google account connected: ${email}. Real-time learning tracking started.`);
+    notifyLedger(`Account connected: ${email}. Real-time learning tracking started.`);
     setCurrentTab('dashboard');
   };
 
