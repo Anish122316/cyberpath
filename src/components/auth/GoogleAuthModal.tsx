@@ -9,15 +9,14 @@ import {
   AlertCircle,
   Mail,
   User as UserIcon,
-  Check,
   History,
   Eye,
   EyeOff,
   KeyRound,
   ShieldCheck,
   Circle,
-  HelpCircle,
-  RotateCcw
+  RotateCcw,
+  Trash2,
 } from 'lucide-react';
 import { UserProfile } from '../../types';
 
@@ -32,7 +31,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
   isOpen,
   onClose,
   onLoginSuccess,
-  defaultEmail = 'anishkr649world@gmail.com',
+  defaultEmail = '',
 }) => {
   const [authMode, setAuthMode] = useState<'PERSONAL_EMAIL' | 'GOOGLE'>('PERSONAL_EMAIL');
   const [personalEmail, setPersonalEmail] = useState<string>('');
@@ -41,12 +40,13 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isResettingPassword, setIsResettingPassword] = useState<boolean>(false);
   const [googleEmail, setGoogleEmail] = useState<string>(defaultEmail);
-  const [googleName, setGoogleName] = useState<string>('Anish Kumar');
+  const [googleName, setGoogleName] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
+  const [savedAccountsVersion, setSavedAccountsVersion] = useState<number>(0);
 
-  // Scan localStorage for any previously logged in accounts on this device
+  // Scan localStorage for any previously logged in accounts on this browser
   const savedAccounts = useMemo(() => {
     if (!isOpen) return [];
     try {
@@ -75,7 +75,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
     } catch {
       return [];
     }
-  }, [isOpen]);
+  }, [isOpen, savedAccountsVersion]);
 
   // Real-time password criteria validation
   const hasAlphabet = useMemo(() => /[a-zA-Z]/.test(password), [password]);
@@ -188,11 +188,22 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
   };
 
   const handleGoogleSignIn = (emailToUse: string, nameToUse: string) => {
+    const trimmedEmail = emailToUse.trim().toLowerCase();
+    if (!trimmedEmail) {
+      setValidationError('Please enter your Google / Gmail address to sign in.');
+      return;
+    }
+    if (!validateEmail(trimmedEmail)) {
+      setValidationError('Please enter a valid email format (e.g. yourname@gmail.com).');
+      return;
+    }
+
+    setValidationError(null);
     setIsProcessing(true);
     setTimeout(() => {
       onLoginSuccess({
-        email: emailToUse.trim().toLowerCase(),
-        name: nameToUse.trim() || emailToUse.split('@')[0],
+        email: trimmedEmail,
+        name: nameToUse.trim() || trimmedEmail.split('@')[0],
         isLoggedIn: true,
         picture: undefined,
       });
@@ -208,6 +219,22 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
     setPassword('');
     setValidationError(null);
     setSuccessNotice(`Selected account: ${email}. Please enter your password to proceed.`);
+  };
+
+  const handleRemoveSavedAccount = (e: React.MouseEvent, emailToRemove: string) => {
+    e.stopPropagation();
+    try {
+      localStorage.removeItem(`cyberpath_user_${emailToRemove}`);
+      localStorage.removeItem(`cyberpath_pwd_${emailToRemove}`);
+      const active = localStorage.getItem('cyberpath_active_email');
+      if (active === emailToRemove) {
+        localStorage.removeItem('cyberpath_active_email');
+      }
+      setSuccessNotice(`Removed browser credential record for ${emailToRemove}.`);
+      setSavedAccountsVersion((v) => v + 1);
+    } catch {
+      // safe fallback
+    }
   };
 
   return (
@@ -230,10 +257,10 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
           </div>
 
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-            Sign In with Password
+            Account Authentication
           </h2>
           <p className="text-xs text-slate-400 max-w-md mx-auto">
-            Log in with your personal email and secure password. Passwords must strictly satisfy cybersecurity policy requirements: letters, numbers, and special characters.
+            Log in with your personal email and secure password, or authenticate quickly with any Google account.
           </p>
         </div>
 
@@ -321,7 +348,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
                     required
                     value={personalEmail}
                     onChange={(e) => setPersonalEmail(e.target.value)}
-                    placeholder="e.g. yourname@gmail.com, you@domain.com"
+                    placeholder="e.g. you@example.com"
                     className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-emerald-500 placeholder:text-slate-500"
                     id="input-personal-email"
                   />
@@ -433,7 +460,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
                     type="text"
                     value={personalName}
                     onChange={(e) => setPersonalName(e.target.value)}
-                    placeholder="e.g. Anish Kumar or Sarah Chen"
+                    placeholder="e.g. Alex Hunter or Sarah Chen"
                     className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500 placeholder:text-slate-500"
                     id="input-personal-name"
                   />
@@ -485,64 +512,82 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
         {/* Mode 2: Google 1-Click */}
         {authMode === 'GOOGLE' && (
           <div className="space-y-4">
-            {/* Detected Account Card */}
-            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-700/80 hover:border-emerald-500/80 transition-colors">
-              <button
-                type="button"
-                onClick={() => handleGoogleSignIn(googleEmail, googleName)}
-                disabled={isProcessing}
-                className="w-full flex items-center justify-between text-left group"
-                id="sign-in-detected-account-btn"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold flex items-center justify-center text-sm">
-                    {googleEmail.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors">
-                      {googleName}
-                    </div>
-                    <div className="text-xs text-slate-400 font-mono">
-                      {googleEmail}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-xs font-mono px-3 py-1 rounded bg-emerald-500 text-slate-950 font-bold flex items-center space-x-1 group-hover:bg-emerald-400">
-                  <span>Continue</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
-              </button>
-            </div>
+            <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
+              <div className="flex items-center space-x-2 text-xs font-mono text-slate-300">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Quick Google Account Authentication</span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Connect seamlessly with your Google or Gmail account in one click. No password required for verified Google OAuth sessions.
+              </p>
 
-            {/* Custom Google Account Editor */}
-            <div className="pt-2 border-t border-slate-800 space-y-3">
-              <div className="text-xs font-mono text-slate-400">
-                Or enter another Google / Gmail account:
+              <div className="space-y-3 pt-1">
+                <div>
+                  <label className="block text-[11px] font-mono text-slate-300 uppercase mb-1">
+                    Google / Gmail Address <span className="text-cyan-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="email"
+                      value={googleEmail}
+                      onChange={(e) => {
+                        setGoogleEmail(e.target.value);
+                        setValidationError(null);
+                      }}
+                      placeholder="e.g. yourname@gmail.com"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-cyan-500 placeholder:text-slate-600"
+                      id="input-google-email"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono text-slate-300 uppercase mb-1">
+                    Display Name <span className="text-slate-500">(Optional)</span>
+                  </label>
+                  <div className="relative">
+                    <UserIcon className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={googleName}
+                      onChange={(e) => setGoogleName(e.target.value)}
+                      placeholder="e.g. Alex Hunter"
+                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-cyan-500 placeholder:text-slate-600"
+                      id="input-google-name"
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <input
-                  type="email"
-                  value={googleEmail}
-                  onChange={(e) => setGoogleEmail(e.target.value)}
-                  placeholder="other@gmail.com"
-                  className="p-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white font-mono focus:outline-none focus:border-cyan-500"
-                />
-                <input
-                  type="text"
-                  value={googleName}
-                  onChange={(e) => setGoogleName(e.target.value)}
-                  placeholder="Display Name"
-                  className="p-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-500"
-                />
-              </div>
+
               <button
                 type="button"
                 onClick={() => handleGoogleSignIn(googleEmail, googleName)}
-                disabled={isProcessing}
-                className="w-full py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-mono text-xs transition-colors flex items-center justify-center space-x-1.5"
+                disabled={isProcessing || !googleEmail.trim()}
+                className="w-full mt-2 py-2.5 rounded-xl bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-bold font-mono text-xs transition-all flex items-center justify-center space-x-2 shadow-lg shadow-white/10 active:scale-98"
+                id="btn-google-one-click-login"
               >
-                <span>Sign in with this Google ID</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                {/* Google G Icon */}
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.29 21.36 7.36 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.17 0 9.99 0 12s.46 3.83 1.26 5.42l4.02-3.15z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.29 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                  />
+                </svg>
+                <span>{isProcessing ? 'Authenticating with Google...' : '1-Click Sign In with Google'}</span>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-700" />
               </button>
             </div>
           </div>
@@ -557,24 +602,35 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
             </div>
             <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
               {savedAccounts.map((acc) => (
-                <button
+                <div
                   key={acc.email}
-                  type="button"
-                  onClick={() => selectSavedAccount(acc.email, acc.name)}
-                  className="w-full p-2 rounded-lg bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 flex items-center justify-between text-left transition-colors text-xs font-mono group"
+                  className="w-full p-2 rounded-lg bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 flex items-center justify-between transition-colors text-xs font-mono group"
                 >
-                  <div className="truncate">
+                  <button
+                    type="button"
+                    onClick={() => selectSavedAccount(acc.email, acc.name)}
+                    className="flex-1 text-left truncate flex items-center space-x-2"
+                  >
                     <span className="text-white font-semibold group-hover:text-cyan-400 transition-colors">
                       {acc.name}
-                    </span>{' '}
-                    <span className="text-slate-500 text-[11px]">({acc.email})</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-[11px] text-amber-400 font-semibold flex-shrink-0">
-                    <span>Lvl {acc.level}</span>
+                    </span>
+                    <span className="text-slate-500 text-[11px] truncate">({acc.email})</span>
+                  </button>
+                  <div className="flex items-center space-x-2.5 text-[11px] flex-shrink-0">
+                    <span className="text-amber-400 font-semibold">Lvl {acc.level}</span>
                     <span className="text-slate-600">|</span>
-                    <span>+{acc.xp} XP</span>
+                    <span className="text-emerald-400">+{acc.xp} XP</span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleRemoveSavedAccount(e, acc.email)}
+                      title={`Remove ${acc.email} from saved browser accounts`}
+                      className="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition-colors"
+                      aria-label={`Remove saved profile ${acc.email}`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </div>
@@ -584,10 +640,10 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
         <div className="pt-4 border-t border-slate-800 text-[11px] font-mono text-slate-400 space-y-1.5">
           <div className="flex items-center space-x-1.5 text-emerald-400 font-bold">
             <Shield className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>NIST-Aligned Password Enforcement:</span>
+            <span>NIST-Aligned Authentication:</span>
           </div>
           <p className="text-slate-500 leading-relaxed">
-            Passwords must contain letters (alphabet), numbers, and special symbols to protect your CTF credentials and skill verification data from dictionary and brute-force attacks.
+            Email & password sign-in requires alphabet, numerical, and special characters to safeguard credentials and CTF score integrity.
           </p>
         </div>
       </div>

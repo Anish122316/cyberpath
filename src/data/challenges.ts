@@ -517,6 +517,269 @@ FLAG = "CYBERPATH{3cdsa_n0nc3_r3us3_k3y_r3c0v3r3d}"`,
     associatedSkillId: 'fundamentals',
     learningTakeaway: 'ECDSA signature generation requires a unique, cryptographically random nonce per signature (RFC 6979 deterministic nonce generation) to prevent immediate private key extraction.'
   },
+  {
+    id: 'ch-crypto-06',
+    title: 'Polyalphabetic Vigenère Cipher & Kasiski Frequency Analysis',
+    category: 'Cryptography',
+    difficulty: 'Beginner',
+    baseXp: 110,
+    starsReward: 1,
+    scenario: 'An intercepted diplomatic communique transmitted over low-frequency radio was encrypted with a repeating-key polyalphabetic substitution cipher. Statistical cryptanalysis of recurring trigrams ("VHX") and Index of Coincidence (IoC ≈ 0.066) indicates a 6-letter keyword.',
+    objective: 'Perform Kasiski examination on the ciphertext, deduce the 6-letter keyword ("CIPHER"), and reverse the polyalphabetic shift to reveal the intelligence flag.',
+    targetEnvironment: 'Signals Intelligence Intercept (Diplomatic Wire #418)',
+    artifactType: 'Source Code',
+    tags: ['Classical Crypto', 'Vigenère', 'Kasiski Analysis', 'Frequency Analysis', 'Index of Coincidence'],
+    cve: 'CWE-326',
+    mitreTactic: 'Credential Access (TA0006) / Unsecured Credentials (T1552)',
+    artifactSnippet: `[SIGINT INTERCEPT - STATION ECHO-7]
+Algorithm: Polyalphabetic Substitution (Vigenère)
+Key Length Examination:
+  Trigram "VHX" repeated at positions: 18, 48, 108 (GCD = 6)
+  Index of Coincidence (IoC): 0.0658 (Matches English distribution)
+  Deduced Keyword: "CIPHER"
+
+Ciphertext:
+  EZIMTVEVR{x1k3v3z3_r0ta4twa4i1k_fv4re3l}
+
+Decryption Routine:
+  P[i] = (C[i] - K[i % 6] + 26) % 26
+  Key:   C I P H E R C I P H E R C I P H E R ...
+  Plain: CYBERPATH{v1g3n3r3_p0ly4lph4b3t1c_cr4ck3d}`,
+    rawFlag: 'CYBERPATH{v1g3n3r3_p0ly4lph4b3t1c_cr4ck3d}',
+    flagHash: '6713df8e32c276118a78ea8bfa3a720ed297d4221ff4d333d751f0d32783d6a2',
+    hints: [
+      { text: 'A Vigenère cipher shifts each letter by the corresponding letter of the repeating keyword.', penaltyXp: 15 },
+      { text: 'Use the 6-letter keyword "CIPHER" in the Quick Tools Vigenère Decoder.', penaltyXp: 20 }
+    ],
+    associatedSkillId: 'fundamentals',
+    learningTakeaway: 'Monoalphabetic and polyalphabetic substitution ciphers preserve underlying statistical language traits. Modern ciphers require Shannon’s confusion and diffusion to eliminate frequency correlation.'
+  },
+  {
+    id: 'ch-crypto-07',
+    title: 'Two-Time Pad: XOR Keystream Reuse & Crib Dragging',
+    category: 'Cryptography',
+    difficulty: 'Beginner',
+    baseXp: 130,
+    starsReward: 1,
+    scenario: 'An IoT telemetry transmitter was configured to encrypt outbound payloads using a stream cipher One-Time Pad (OTP). However, a firmware bug caused the device to reuse the exact same pseudorandom keystream K for two consecutive transmissions: C1 = P1 ⊕ K and C2 = P2 ⊕ K.',
+    objective: 'Exploit the fundamental rule of stream ciphers: XORing the two ciphertexts cancels out the keystream (C1 ⊕ C2 = P1 ⊕ P2). Drag known plaintext cribs ("CONFIDENTIAL_OPS") to decrypt the second transmission and retrieve the secret flag.',
+    targetEnvironment: 'Telemetry Radio Tap (868 MHz FSK Demodulator)',
+    artifactType: 'Hex Dump',
+    tags: ['Stream Cipher', 'XOR', 'Two-Time Pad', 'Crib Dragging', 'Keystream Reuse'],
+    cve: 'CWE-323',
+    mitreTactic: 'Collection (TA0009) / Adversary-in-the-Middle (T1557)',
+    artifactSnippet: `[PACKET REPLAY INTERCEPT]
+Ciphertext 1 (Hex):
+00 1a 0f 06 1d 0b 07 10 0d 07 00 1b 1c 1b 1c 1c 11 1d 06 00 19 04 1a 0b 16 02 1d 08 0f 16 11 02 01 07 1c 02 17 00 0b 0c 1c
+
+Ciphertext 2 (Hex):
+43 59 42 45 52 50 41 54 48 7b 78 30 72 5f 74 77 30 5f 74 31 6d 33 5f 70 34 64 5f 63 34 6e 63 33 6c 6c 33 64 7d
+
+C1 ⊕ C2 Resulting Stream:
+[XOR Delta]: Plaintext 1 ("CONFIDENTIAL_CLEARANCE_REQUIRED_ZONE") ⊕ Plaintext 2
+Drag crib "CYBERPATH{" across C1 ⊕ C2 to instantly recover:
+CYBERPATH{x0r_tw0_t1m3_p4d_c4nc3ll3d}`,
+    rawFlag: 'CYBERPATH{x0r_tw0_t1m3_p4d_c4nc3ll3d}',
+    flagHash: 'f91472c44cb03cfcda88e0dab33f49f1f775de832c019315555372eab4402bb0',
+    hints: [
+      { text: 'When two ciphertexts share a keystream, C1 ⊕ C2 = P1 ⊕ P2.', penaltyXp: 15 },
+      { text: 'Try dragging known English words or the standard flag prefix "CYBERPATH{" over the XOR output.', penaltyXp: 25 }
+    ],
+    associatedSkillId: 'fundamentals',
+    learningTakeaway: 'The One-Time Pad is mathematically unbreakable only if the keystream is as long as the message, completely random, and NEVER reused. Keystream reuse immediately enables crib dragging.'
+  },
+  {
+    id: 'ch-crypto-08',
+    title: 'Hash Length Extension Attack (MD5 / SHA-256 Secret Prefix MAC)',
+    category: 'Cryptography',
+    difficulty: 'Intermediate',
+    baseXp: 210,
+    starsReward: 1,
+    scenario: 'A legacy REST API authenticates requests using a naive secret-prefix Message Authentication Code: MAC = MD5(secret || data). Because MD5 and SHA-256 are Merkle-Damgård iterated hash functions, an attacker can append data without knowing the secret key by setting the hash state to the original digest.',
+    objective: 'Use HashPump to calculate the required MD5 padding for message "action=read&user=guest", append "&role=admin&escalate=true", calculate the forged MAC signature, and extract the administrative API response flag.',
+    targetEnvironment: 'http://api.gateway.internal/download?mac=... (API Gateway)',
+    artifactType: 'Terminal',
+    tags: ['Length Extension', 'MD5', 'Merkle-Damgard', 'MAC Forgery', 'HashPump'],
+    cve: 'CWE-328',
+    mitreTactic: 'Defense Evasion (TA0005) / Subvert Trust Controls (T1553)',
+    artifactSnippet: `$ hashpump -s 7982e5b88c42b58849b2518e983fa9b1 \\
+    -d "action=read&user=guest" \\
+    -k 16 \\
+    -a "&role=admin&grant=root"
+
+[+] New Signature: 3f8a91c0e29b441280ca613bf5e1008d
+[+] New Payload (URL Encoded):
+action=read&user=guest%80%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%01%58&role=admin&grant=root
+
+$ curl -s "http://api.gateway.internal/auth?mac=3f8a91c0e29b441280ca613bf5e1008d&data=action%3Dread..."
+HTTP/1.1 200 OK
+{
+  "status": "AUTHORIZED_ADMIN",
+  "grantedRole": "SUPER_ADMIN",
+  "secretFlag": "CYBERPATH{l3ngth_3xt3ns10n_m4c_f0rg3ry_pwn}"
+}`,
+    rawFlag: 'CYBERPATH{l3ngth_3xt3ns10n_m4c_f0rg3ry_pwn}',
+    flagHash: '76d26146926bc63b8c90435c37c1fd420292a90202c6093cc11f48abd6b0dd4f',
+    hints: [
+      { text: 'Merkle-Damgård hash functions process inputs in blocks. The intermediate digest is simply the internal state after the last block.', penaltyXp: 25 },
+      { text: 'Check the server HTTP 200 response returned after supplying the newly computed signature.', penaltyXp: 35 }
+    ],
+    associatedSkillId: 'fundamentals',
+    learningTakeaway: 'Never construct message authentication codes as H(secret || data). Always use HMAC (RFC 2104) or modern Sponge-based algorithms (like SHA-3/Keccak) that are immune to length extension.'
+  },
+  {
+    id: 'ch-crypto-09',
+    title: 'JWT Cryptographic Key Confusion (RS256 to HS256 Public Key Exploit)',
+    category: 'Cryptography',
+    difficulty: 'Intermediate',
+    baseXp: 230,
+    starsReward: 2,
+    scenario: 'A microservices cluster authenticates sessions with JSON Web Tokens (JWT). The identity provider signs tokens with an RSA private key (RS256). However, the resource server verification library dynamically honors the "alg" header parameter without whitelist enforcement. An attacker modifies "alg" to symmetric HMAC-SHA256 ("HS256") and signs an escalated token using the server\'s public RSA PEM key as the HMAC shared secret.',
+    objective: 'Analyze the forged administrative token and cryptographic algorithm substitution exploit script, verify the signature against the server public key string, and recover the compromised JWT claim flag.',
+    targetEnvironment: 'https://auth.cloud.internal/api/v1/session',
+    artifactType: 'JWT Token',
+    tags: ['JWT', 'Key Confusion', 'Algorithm Confusion', 'RS256', 'HS256', 'Web Crypto'],
+    cve: 'CVE-2015-9235 (CWE-347)',
+    mitreTactic: 'Privilege Escalation (TA0004) / Access Token Manipulation (T1134)',
+    artifactSnippet: `[ORIGINAL LEGITIMATE JWT (RS256)]:
+Header:  {"alg": "RS256", "typ": "JWT"}
+Payload: {"sub": "user_4910", "role": "trainee", "iss": "auth.cloud.internal"}
+Signature: [Valid RSA-2048 PKCS#1 v1.5 Signature]
+
+[FORGED ATTACKER JWT (HS256)]:
+Header:  {"alg": "HS256", "typ": "JWT"}
+Payload: {"sub": "user_4910", "role": "cluster-admin", "flag": "CYBERPATH{jwt_k3y_c0nfus10n_rs256_t0_hs256}"}
+Secret Used for HMAC:
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0rVp...
+-----END PUBLIC KEY-----
+
+Python Verification Test:
+>>> jwt.decode(forged_token, public_key_pem, algorithms=["HS256"])
+{"sub": "user_4910", "role": "cluster-admin", "flag": "CYBERPATH{jwt_k3y_c0nfus10n_rs256_t0_hs256}"}`,
+    rawFlag: 'CYBERPATH{jwt_k3y_c0nfus10n_rs256_t0_hs256}',
+    flagHash: '5f72cda14dc223c03525f17ffc415a15947ee69c9f0cb88a39415c30ea9f30a7',
+    hints: [
+      { text: 'Inspect the header and payload of the forged JWT token.', penaltyXp: 25 },
+      { text: 'Notice how the server verifies HS256 tokens using the public key as a raw HMAC secret string.', penaltyXp: 35 }
+    ],
+    associatedSkillId: 'fundamentals',
+    learningTakeaway: 'JWT libraries must strictly configure expected algorithms on the server (e.g., algorithms=["RS256"]). Never allow client-supplied token headers to determine verification logic.'
+  },
+  {
+    id: 'ch-crypto-10',
+    title: 'Diffie-Hellman Small Subgroup Confinement Attack',
+    category: 'Cryptography',
+    difficulty: 'Advanced',
+    baseXp: 320,
+    starsReward: 3,
+    scenario: 'A proprietary VPN gateway implements Diffie-Hellman key exchange over a non-safe prime group Z_p* where p - 1 contains numerous small prime factors (small subgroups). Because the server failed to validate whether the client public value A = g^a mod p lies in a large prime-order subgroup, an active attacker injects a rogue value A with order q = 239, confining the shared key K = A^b mod p to only 239 potential values.',
+    objective: 'Audit the SageMath discrete log cryptanalysis script, evaluate the small subgroup order reduction, and decrypt the captured session handshake flag.',
+    targetEnvironment: 'IPsec / IKEv2 Cryptographic Enclave Simulator',
+    artifactType: 'Source Code',
+    tags: ['Diffie-Hellman', 'Discrete Log', 'Small Subgroup', 'Number Theory', 'Pohlig-Hellman'],
+    cve: 'CWE-327',
+    mitreTactic: 'Credential Access (TA0006) / Exploitation for Credential Access (T1212)',
+    artifactSnippet: `# SageMath Small Subgroup Confinement Solver
+p = 0xd4bc... # 2048-bit prime where factor(p-1) has small factors
+# Rogue client public key with order q = 239:
+A_rogue = power_mod(g, (p - 1) // 239, p)
+
+# Server computes: K_shared = (A_rogue)^b mod p
+# Since (A_rogue)^239 = 1 mod p, K_shared has at most 239 possibilities!
+print("[*] Exhausting small subgroup of size 239...")
+for test_val in range(239):
+    candidate_key = power_mod(A_rogue, test_val, p)
+    aes_key = hashlib.sha256(str(candidate_key).encode()).digest()[:16]
+    decrypted = decrypt_aes_cbc(ciphertext, aes_key)
+    if b"CYBERPATH" in decrypted:
+        print("[+] Flag Recovered:", decrypted.decode())
+        break
+# Output:
+# [+] Flag Recovered: CYBERPATH{dh_sm4ll_subgr0up_c0nf1n3m3nt}`,
+    rawFlag: 'CYBERPATH{dh_sm4ll_subgr0up_c0nf1n3m3nt}',
+    flagHash: 'f63d85de43bfee4265652f5e67c5b4fcdeb7614f4a96fd019f830a52d05d5014',
+    hints: [
+      { text: 'In Diffie-Hellman, if public keys are not validated, the shared key can be forced into a small subgroup.', penaltyXp: 35 },
+      { text: 'Review the decrypted output in the SageMath cryptanalysis output.', penaltyXp: 45 }
+    ],
+    associatedSkillId: 'fundamentals',
+    learningTakeaway: 'Always use standardized safe primes (where (p-1)/2 is prime) or validate that public keys satisfy A^q = 1 mod p for the designated large subgroup order q.'
+  },
+  {
+    id: 'ch-crypto-11',
+    title: 'AES-GCM Nonce Reuse & GHASH Authentication Key Recovery',
+    category: 'Cryptography',
+    difficulty: 'Advanced',
+    baseXp: 360,
+    starsReward: 3,
+    scenario: 'A high-throughput financial message gateway uses AES-128-GCM for authenticated encryption. Due to a multi-threaded race condition in the IV counter, two different messages were encrypted with the identical 96-bit Initialization Vector (IV). Reusing an IV in GCM mode allows an attacker to compute the XOR difference of plaintexts and derive the GHASH authentication subkey H as roots of a polynomial in GF(2^128).',
+    objective: 'Analyze the Galois Field GF(2^128) polynomial factorization solver, compute the GHASH hash key H, forge an authenticated payment packet with valid auth tag, and obtain the transaction authorization flag.',
+    targetEnvironment: 'Financial Fix Gateway (TLS 1.2 AES-128-GCM)',
+    artifactType: 'Source Code',
+    tags: ['AES-GCM', 'Nonce Reuse', 'GHASH', 'Galois Field', 'AEAD Forgery'],
+    cve: 'CWE-323',
+    mitreTactic: 'Defense Evasion (TA0005) / Modify Authentication Process (T1556)',
+    artifactSnippet: `[AES-GCM Nonce Reuse Cryptanalysis]
+IV Reused: 9f 4a 12 b8 44 91 02 a3 dd 00 21 bc
+Packet 1: C1 = 4a19... Tag1 = e8192a01948120481204812048120481
+Packet 2: C2 = 9182... Tag2 = f0291038102948102948102948102948
+
+# GHASH(H, A1, C1) ⊕ Tag1 = GHASH(H, A2, C2) ⊕ Tag2
+# Forms polynomial equation P(H) = 0 over GF(2^128):
+# Root recovery yields H = 0x82f4910284ab91029384756192837465
+
+[*] Forging Authenticated Transaction with recovered H:
+    Forged Ciphertext: 8a1b2c3d4e5f...
+    Computed Tag: 3b91fa02848192348576918237465012
+    Server Verification: 200 OK (AUTHENTICATED)
+    Response: CYBERPATH{gcm_n0nc3_r3us3_gh4sh_f0rg3ry}`,
+    rawFlag: 'CYBERPATH{gcm_n0nc3_r3us3_gh4sh_f0rg3ry}',
+    flagHash: 'fc5ab1d6a6ebcaf52d21fa1b8ca5a02e8ed06c761494c8ea9c0e96583e3332c0',
+    hints: [
+      { text: 'In AES-GCM, the authentication tag is computed using GHASH over GF(2^128). Reusing IV lets you equate two tag expressions.', penaltyXp: 35 },
+      { text: 'Look at the server response after the authenticated packet is forged.', penaltyXp: 45 }
+    ],
+    associatedSkillId: 'fundamentals',
+    learningTakeaway: 'In Galois/Counter Mode (AES-GCM), nonces MUST NEVER repeat for a given key. A single nonce reuse completely destroys both authenticity (GHASH key recovered) and confidentiality.'
+  },
+  {
+    id: 'ch-crypto-12',
+    title: 'Post-Quantum Cryptography: LWE Lattice Reduction & Decryption',
+    category: 'Cryptography',
+    difficulty: 'Expert',
+    baseXp: 490,
+    starsReward: 5,
+    scenario: 'A defense research laboratory is experimenting with a Learning With Errors (LWE) post-quantum public-key encryption scheme: b = A · s + e (mod q). However, the implementation used an insufficiently small Gaussian noise parameter (standard deviation σ = 1.0) and small lattice dimension n = 64. An attacker constructs a Kannan embedding matrix and executes the Lenstra-Lenstra-Lovász (LLL) lattice reduction algorithm to uncover the unique shortest vector.',
+    objective: 'Examine the lattice basis reduction solver output, observe the Gram-Schmidt orthogonalization vectors, verify the recovered secret vector s, and decode the decrypted quantum-resistant ciphertext flag.',
+    targetEnvironment: 'SageMath Post-Quantum Cryptanalysis Lab (Kyber/LWE Target)',
+    artifactType: 'Terminal',
+    tags: ['Post-Quantum', 'LWE', 'Lattice Reduction', 'LLL Algorithm', 'NIST PQC'],
+    cve: 'CWE-327',
+    mitreTactic: 'Impact (TA0040) / Data Encrypted for Impact (T1486)',
+    artifactSnippet: `$ sage lwe_kannan_solver.sage --dim 64 --modulus 4093 --sigma 1.0
+[*] Setting up Kannan's Embedding Matrix (Dimension 65 x 65)...
+[*] Running Lenstra–Lenstra–Lovász (LLL) Lattice Reduction:
+    δ parameter = 0.99
+    Gram-Schmidt norms decreasing smoothly...
+    Shortest vector discovered in basis row 0!
+
+[+] Secret error vector e isolated: [0, -1, 1, 0, 1, -1, 0, ...]
+[+] Extracted secret key vector s:
+    s = [41, 19, 82, 09, 12, 77, 94, 21, ...]
+[+] Decrypting LWE ciphertext block:
+    m = round(q / 2 * bit)
+    Decoded ASCII Plaintext:
+    CYBERPATH{lwe_l4tt1c3_lll_r3duct10n_pqc}`,
+    rawFlag: 'CYBERPATH{lwe_l4tt1c3_lll_r3duct10n_pqc}',
+    flagHash: '7dc068cfd51574b0d83f383564e07a422e41ad004349615e4d8031f620605c68',
+    hints: [
+      { text: 'Learning With Errors (LWE) relies on the hardness of the Shortest Vector Problem (SVP).', penaltyXp: 45 },
+      { text: 'When noise is too small, Kannan’s embedding with LLL recovers the error and secret vector in polynomial time.', penaltyXp: 55 }
+    ],
+    associatedSkillId: 'fundamentals',
+    learningTakeaway: 'Post-Quantum schemes like ML-KEM (Kyber) require parameter sets certified by NIST FIPS 203. Underestimating lattice dimension or error variance allows lattice basis reduction attacks.'
+  },
 
   // ===================== CLOUD SECURITY =====================
   {

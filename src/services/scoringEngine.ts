@@ -246,6 +246,7 @@ export function calculateCareerReadiness(
       calculationVersion: ENGINE_VERSION,
       targetRole: user.targetRole,
       overallReadinessScore: null,
+      confidenceFactor: Math.round((availableDataCount / 6) * 100),
       isSufficientData: false,
       missingDataReasons: missingReasons,
       dimensions: {
@@ -294,6 +295,7 @@ export function calculateCareerReadiness(
     calculationVersion: ENGINE_VERSION,
     targetRole: user.targetRole,
     overallReadinessScore: readinessScore,
+    confidenceFactor: Math.min(100, Math.round(availableWeightSum * 100)),
     isSufficientData: true,
     missingDataReasons: missingReasons,
     dimensions: {

@@ -21,6 +21,7 @@ import {
   User,
   RotateCcw,
   Mail,
+  ShieldCheck,
 } from 'lucide-react';
 import { NavigationTab, TargetRole, UserProfile } from '../../types';
 import { CAREER_PATHS } from '../../data/careerPaths';
@@ -33,6 +34,7 @@ interface NavbarProps {
   onOpenGoogleAuth: () => void;
   onLogout: () => void;
   onResetProgress: () => void;
+  onOpenSecurityModal?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -43,6 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenGoogleAuth,
   onLogout,
   onResetProgress,
+  onOpenSecurityModal,
 }) => {
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -144,6 +147,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
+          {/* Security Shield Indicator Badge */}
+          {onOpenSecurityModal && (
+            <button
+              onClick={onOpenSecurityModal}
+              className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1 rounded bg-slate-900 border border-emerald-500/40 hover:border-emerald-400 text-[11px] font-mono text-emerald-300 transition-colors shadow-sm"
+              title="Click to inspect real-time application and data security posture"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+              <span>L4 Security Active</span>
+            </button>
+          )}
+
           {/* Google Sign-in / Connected Profile Button */}
           {user.isLoggedIn ? (
             <div className="relative">
@@ -174,6 +189,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
 
                   <div className="px-2 space-y-1">
+                    {onOpenSecurityModal && (
+                      <button
+                        onClick={() => {
+                          onOpenSecurityModal();
+                          setUserDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-1.5 rounded text-xs text-emerald-400 hover:bg-emerald-950/30 flex items-center space-x-2"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Data Security & Audit</span>
+                      </button>
+                    )}
+
                     <button
                       onClick={() => {
                         onSelectTab('skills');

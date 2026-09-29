@@ -33,10 +33,27 @@ import {
   Minimize2,
   ShieldAlert,
   Flame,
-  Binary
+  Binary,
+  Key,
+  Database,
+  Activity,
+  ShieldCheck,
+  Code
 } from 'lucide-react';
 import { CTF_CHALLENGES } from '../../data/challenges';
 import { CTFChallenge, UserProfile } from '../../types';
+import {
+  computeSHA256,
+  computeSHA1,
+  computeMD5,
+  xorHex,
+  vigenereDecrypt,
+  caesarShift,
+  inspectJwt,
+  verifyFlagServer,
+  JwtInspectionResult
+} from '../../services/securityService';
+import { SecurityPostureModal } from './SecurityPostureModal';
 
 interface ChallengesViewProps {
   user: UserProfile;
@@ -61,13 +78,19 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({ user, onSubmitFl
   const [copiedArtifactId, setCopiedArtifactId] = useState<string | null>(null);
   const [activeArtifactTab, setActiveArtifactTab] = useState<Record<string, 'ARTIFACT' | 'TACTICS'>>({});
 
-  // Cyber Analyst Quick Tools (Decoder / Converter)
+  // Cyber Analyst Quick Tools (Decoder / Converter / Crypto Workbench)
   const [showToolsDrawer, setShowToolsDrawer] = useState<boolean>(false);
-  const [toolActiveTab, setToolActiveTab] = useState<'BASE64' | 'HEX' | 'URL' | 'ROT13'>('BASE64');
+  const [showSecurityModal, setShowSecurityModal] = useState<boolean>(false);
+  const [toolActiveTab, setToolActiveTab] = useState<'BASE64' | 'HEX' | 'URL' | 'ROT13' | 'VIGENERE' | 'XOR' | 'HASH' | 'JWT'>('BASE64');
   const [toolInput, setToolInput] = useState<string>('');
   const [toolOutput, setToolOutput] = useState<string>('');
   const [toolCopied, setToolCopied] = useState<boolean>(false);
   const [rotShift, setRotShift] = useState<number>(13);
+  const [vigenereKey, setVigenereKey] = useState<string>('CIPHER');
+  const [xorInputB, setXorInputB] = useState<string>('');
+  const [hashResults, setHashResults] = useState<{ md5: string; sha1: string; sha256: string } | null>(null);
+  const [jwtResult, setJwtResult] = useState<JwtInspectionResult | null>(null);
+  const [isSubmittingServer, setIsSubmittingServer] = useState<Record<string, boolean>>({});
 
   // Full-screen inspection modal
   const [inspectModalChallenge, setInspectModalChallenge] = useState<CTFChallenge | null>(null);
@@ -195,26 +218,60 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({ user, onSubmitFl
     }));
   };
 
-  const handleSubmit = (challenge: CTFChallenge) => {
+  const handleSubmit = async (challenge: CTFChallenge) => {
     const input = flagInputs[challenge.id] || '';
     if (!input.trim()) return;
 
     const hintsUsed = revealedHints[challenge.id] || [];
     const penalty = hintsUsed.reduce((sum, hIdx) => sum + (challenge.hints[hIdx]?.penaltyXp || 0), 0);
 
-    const result = onSubmitFlag(challenge.id, input.trim(), penalty);
-    setFeedbackMessages((prev) => ({ ...prev, [challenge.id]: result }));
+    setIsSubmittingServer((prev) => ({ ...prev, [challenge.id]: true }));
+    try {
+      // First attempt server-side constant-time timing-safe verification
+      const serverRes = await verifyFlagServer(challenge.id, input.trim());
+      if (serverRes.success) {
+        const clientRes = onSubmitFlag(challenge.id, input.trim(), penalty);
+        setFeedbackMessages((prev) => ({
+          ...prev,
+          [challenge.id]: {
+            success: true,
+            message: serverRes.message || clientRes.message,
+          },
+        }));
+      } else {
+        setFeedbackMessages((prev) => ({
+          ...prev,
+          [challenge.id]: {
+            success: false,
+            message: serverRes.message || 'Incorrect flag. Cryptographic verification rejected.',
+          },
+        }));
+      }
+    } catch {
+      // Fallback to client submission handler if server route is unavailable
+      const result = onSubmitFlag(challenge.id, input.trim(), penalty);
+      setFeedbackMessages((prev) => ({ ...prev, [challenge.id]: result }));
+    } finally {
+      setIsSubmittingServer((prev) => ({ ...prev, [challenge.id]: false }));
+    }
   };
 
-  // Quick Tools transformations
-  const runDecoder = (type: 'BASE64' | 'HEX' | 'URL' | 'ROT13', input: string, shift: number) => {
-    if (!input) {
+  // Quick Tools & Cryptographic transformations
+  const runDecoder = async (
+    type: 'BASE64' | 'HEX' | 'URL' | 'ROT13' | 'VIGENERE' | 'XOR' | 'HASH' | 'JWT',
+    input: string,
+    shift: number,
+    vigKey: string = vigenereKey,
+    xorB: string = xorInputB
+  ) => {
+    if (!input && type !== 'XOR') {
       setToolOutput('');
+      setHashResults(null);
+      setJwtResult(null);
       return;
     }
     try {
       if (type === 'BASE64') {
-        // Try decoding first, if fails, encode
         try {
           setToolOutput(atob(input.trim()));
         } catch {
@@ -226,40 +283,67 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({ user, onSubmitFl
         for (let i = 0; i < clean.length; i += 2) {
           str += String.fromCharCode(parseInt(clean.substr(i, 2), 16));
         }
-        setToolOutput(str);
+        setToolOutput(str || '[Hex Conversion: empty or invalid hex characters]');
       } else if (type === 'URL') {
         setToolOutput(decodeURIComponent(input));
       } else if (type === 'ROT13') {
-        const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-        const s = ((shift % 26) + 26) % 26;
-        const res = input.replace(/[a-zA-Z]/g, (c) => {
-          const isUpper = c === c.toUpperCase();
-          const lower = c.toLowerCase();
-          const idx = alphabet.indexOf(lower);
-          if (idx === -1) return c;
-          const shifted = alphabet[(idx + s) % 26];
-          return isUpper ? shifted.toUpperCase() : shifted;
-        });
-        setToolOutput(res);
+        setToolOutput(caesarShift(input, shift));
+      } else if (type === 'VIGENERE') {
+        const decrypted = vigenereDecrypt(input, vigKey || 'CIPHER');
+        setToolOutput(decrypted);
+      } else if (type === 'XOR') {
+        const res = xorHex(input, xorB);
+        if (res.error) {
+          setToolOutput(`[XOR Error]: ${res.error}`);
+        } else {
+          setToolOutput(`[XOR Hex]: ${res.hexResult}\n[ASCII / Crib Drag]: ${res.asciiResult}`);
+        }
+      } else if (type === 'HASH') {
+        const md5 = computeMD5(input);
+        const [sha1, sha256] = await Promise.all([computeSHA1(input), computeSHA256(input)]);
+        setHashResults({ md5, sha1, sha256 });
+        setToolOutput(`MD5:    ${md5}\nSHA-1:  ${sha1}\nSHA-256: ${sha256}`);
+      } else if (type === 'JWT') {
+        const res = inspectJwt(input);
+        setJwtResult(res);
+        setToolOutput(
+          `// HEADER:\n${JSON.stringify(res.header, null, 2)}\n\n// PAYLOAD:\n${JSON.stringify(
+            res.payload,
+            null,
+            2
+          )}\n\n// SIGNATURE:\n${res.signature}`
+        );
       }
     } catch (e: any) {
       setToolOutput(`[Conversion Error]: ${e.message || 'Invalid format'}`);
     }
   };
 
-  const handleToolTabChange = (tab: 'BASE64' | 'HEX' | 'URL' | 'ROT13') => {
+  const handleToolTabChange = (
+    tab: 'BASE64' | 'HEX' | 'URL' | 'ROT13' | 'VIGENERE' | 'XOR' | 'HASH' | 'JWT'
+  ) => {
     setToolActiveTab(tab);
-    runDecoder(tab, toolInput, rotShift);
+    runDecoder(tab, toolInput, rotShift, vigenereKey, xorInputB);
   };
 
   const handleToolInputChange = (val: string) => {
     setToolInput(val);
-    runDecoder(toolActiveTab, val, rotShift);
+    runDecoder(toolActiveTab, val, rotShift, vigenereKey, xorInputB);
   };
 
   const handleRotShiftChange = (shift: number) => {
     setRotShift(shift);
-    runDecoder(toolActiveTab, toolInput, shift);
+    runDecoder(toolActiveTab, toolInput, shift, vigenereKey, xorInputB);
+  };
+
+  const handleVigenereKeyChange = (keyVal: string) => {
+    setVigenereKey(keyVal);
+    runDecoder(toolActiveTab, toolInput, rotShift, keyVal, xorInputB);
+  };
+
+  const handleXorBChange = (bVal: string) => {
+    setXorInputB(bVal);
+    runDecoder(toolActiveTab, toolInput, rotShift, vigenereKey, bVal);
   };
 
   return (
@@ -337,7 +421,16 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({ user, onSubmitFl
             <span className="text-cyan-400 font-bold">★ {user.stars}</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setShowSecurityModal(true)}
+              className="px-3 py-1.5 rounded-lg text-xs font-mono transition-all flex items-center gap-1.5 border bg-emerald-950/80 hover:bg-emerald-900/80 text-emerald-300 border-emerald-500/50 shadow-sm"
+              title="View Application and Data Security Posture"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+              <span>Security Shield (Level 4 Active)</span>
+            </button>
+
             <button
               onClick={() => setShowToolsDrawer(!showToolsDrawer)}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all flex items-center gap-1.5 border ${
@@ -347,32 +440,32 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({ user, onSubmitFl
               }`}
             >
               <Wrench className="w-3.5 h-3.5" />
-              <span>{showToolsDrawer ? 'Hide Analyst Decoder' : 'Cyber Analyst Quick Decoder'}</span>
+              <span>{showToolsDrawer ? 'Hide Crypto Tools' : 'Cryptographic Workbench'}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* ================= CYBER ANALYST QUICK TOOLS DRAWER ================= */}
+      {/* ================= CYBER ANALYST & CRYPTOGRAPHIC WORKBENCH ================= */}
       {showToolsDrawer && (
         <div className="p-5 rounded-2xl bg-[#111622] border border-cyan-500/40 shadow-xl space-y-4 animate-fadeIn">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-800">
             <div className="flex items-center space-x-2">
               <Binary className="w-4 h-4 text-cyan-400" />
               <h3 className="text-sm font-bold font-mono text-white uppercase tracking-wider">
-                Integrated Cyber Analyst Workbench
+                Cryptographic & Forensic Analyst Workbench
               </h3>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">
-                CLIENT-SIDE ARTIFACT DECODER
+                OFFLINE CRYPTO SUITE
               </span>
             </div>
 
-            <div className="flex items-center space-x-1.5">
-              {(['BASE64', 'HEX', 'URL', 'ROT13'] as const).map((tab) => (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {(['BASE64', 'HEX', 'URL', 'ROT13', 'VIGENERE', 'XOR', 'HASH', 'JWT'] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => handleToolTabChange(tab)}
-                  className={`px-3 py-1 rounded text-xs font-mono transition-colors ${
+                  className={`px-2.5 py-1 rounded text-[11px] font-mono transition-colors ${
                     toolActiveTab === tab
                       ? 'bg-cyan-500 text-slate-950 font-bold'
                       : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
@@ -384,23 +477,60 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({ user, onSubmitFl
             </div>
           </div>
 
+          {/* Sub-toolbar controls for specific ciphers */}
+          {toolActiveTab === 'ROT13' && (
+            <div className="flex items-center space-x-4 p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-xs font-mono text-slate-300">
+              <span>Caesar Shift Key:</span>
+              <input
+                type="range"
+                min="0"
+                max="25"
+                value={rotShift}
+                onChange={(e) => handleRotShiftChange(parseInt(e.target.value))}
+                className="w-36 accent-cyan-400"
+              />
+              <span className="font-bold text-cyan-400">{rotShift} (ROT{rotShift})</span>
+            </div>
+          )}
+
+          {toolActiveTab === 'VIGENERE' && (
+            <div className="flex items-center space-x-3 p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-xs font-mono text-slate-300">
+              <span>Keyword (A-Z):</span>
+              <input
+                type="text"
+                value={vigenereKey}
+                onChange={(e) => handleVigenereKeyChange(e.target.value.toUpperCase())}
+                placeholder="CIPHER"
+                className="px-3 py-1 rounded bg-slate-950 border border-slate-700 text-cyan-300 font-mono text-xs focus:outline-none uppercase w-36"
+              />
+              <span className="text-[11px] text-slate-500">
+                Calculates: P[i] = (C[i] - K[i] + 26) % 26
+              </span>
+            </div>
+          )}
+
+          {toolActiveTab === 'XOR' && (
+            <div className="space-y-1.5 p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-xs font-mono text-slate-300">
+              <div className="flex justify-between items-center">
+                <span>Ciphertext B (Hex) / Shared Keystream:</span>
+                <span className="text-[11px] text-slate-500">Two-Time Pad Crib Dragging Engine</span>
+              </div>
+              <input
+                type="text"
+                value={xorInputB}
+                onChange={(e) => handleXorBChange(e.target.value)}
+                placeholder="Paste hex bytes for Ciphertext B (e.g. 43 59 42 45 52 50 41 54 48...)"
+                className="w-full px-3 py-1.5 rounded bg-slate-950 border border-slate-700 text-cyan-300 font-mono text-xs focus:outline-none placeholder:text-slate-600"
+              />
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-xs font-mono text-slate-400">
-                <span>Input Payload:</span>
-                {toolActiveTab === 'ROT13' && (
-                  <div className="flex items-center space-x-2">
-                    <span>Shift: {rotShift}</span>
-                    <input
-                      type="range"
-                      min="1"
-                      max="25"
-                      value={rotShift}
-                      onChange={(e) => handleRotShiftChange(parseInt(e.target.value))}
-                      className="w-20 accent-cyan-400"
-                    />
-                  </div>
-                )}
+                <span>
+                  {toolActiveTab === 'XOR' ? 'Ciphertext A (Hex):' : 'Input Payload / Ciphertext:'}
+                </span>
               </div>
               <textarea
                 value={toolInput}
@@ -412,9 +542,17 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({ user, onSubmitFl
                     ? 'Paste hex bytes (e.g. 43 59 42 45 52 50 41 54 48)...'
                     : toolActiveTab === 'URL'
                     ? 'Paste URL encoded strings (e.g. %43%59%42%45%52)...'
-                    : 'Paste cipher text for Caesar / ROT cipher...'
+                    : toolActiveTab === 'ROT13'
+                    ? 'Paste cipher text for Caesar / ROT shift...'
+                    : toolActiveTab === 'VIGENERE'
+                    ? 'Paste polyalphabetic ciphertext (e.g. EZIMTVEVR{x1k3v3z3_...})...'
+                    : toolActiveTab === 'XOR'
+                    ? 'Paste hex bytes for Ciphertext A...'
+                    : toolActiveTab === 'HASH'
+                    ? 'Enter text or flag string to compute SHA-256, SHA-1, MD5...'
+                    : 'Paste JWT token string (header.payload.signature)...'
                 }
-                rows={3}
+                rows={4}
                 className="w-full p-3 rounded-lg bg-slate-950 border border-slate-800 font-mono text-xs text-cyan-300 focus:outline-none focus:border-cyan-500 resize-none placeholder:text-slate-600"
               />
             </div>
@@ -436,11 +574,28 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({ user, onSubmitFl
                   </button>
                 )}
               </div>
-              <div className="w-full p-3 rounded-lg bg-slate-950 border border-slate-800 font-mono text-xs text-emerald-400 h-[76px] overflow-y-auto break-all select-all">
-                {toolOutput || <span className="text-slate-600 italic">Output will render automatically here...</span>}
+              <div className="w-full p-3 rounded-lg bg-slate-950 border border-slate-800 font-mono text-xs text-emerald-400 h-[100px] overflow-y-auto whitespace-pre leading-relaxed select-all">
+                {toolOutput || (
+                  <span className="text-slate-600 italic">Output will render automatically here...</span>
+                )}
               </div>
             </div>
           </div>
+
+          {/* Special Callouts for JWT Inspection */}
+          {toolActiveTab === 'JWT' && jwtResult && jwtResult.warnings && jwtResult.warnings.length > 0 && (
+            <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/50 space-y-1 text-xs font-mono">
+              <div className="text-amber-400 font-bold flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4" />
+                <span>JWT Vulnerability Analysis:</span>
+              </div>
+              {jwtResult.warnings.map((w, idx) => (
+                <div key={idx} className="text-amber-200/90 pl-5">
+                  • {w}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -873,9 +1028,17 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({ user, onSubmitFl
                         </div>
                         <button
                           onClick={() => handleSubmit(ch)}
-                          className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs font-mono transition-all shadow-md shadow-emerald-500/20 active:scale-95"
+                          disabled={isSubmittingServer[ch.id]}
+                          className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs font-mono transition-all shadow-md shadow-emerald-500/20 active:scale-95 disabled:opacity-60 flex items-center gap-1.5"
                         >
-                          Submit
+                          {isSubmittingServer[ch.id] ? (
+                            <>
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                              <span>Verifying...</span>
+                            </>
+                          ) : (
+                            <span>Submit</span>
+                          )}
                         </button>
                       </div>
 
@@ -983,6 +1146,13 @@ export const ChallengesView: React.FC<ChallengesViewProps> = ({ user, onSubmitFl
           </div>
         </div>
       )}
+
+      {/* ================= SECURITY POSTURE & CRYPTOGRAPHIC LEDGER MODAL ================= */}
+      <SecurityPostureModal
+        isOpen={showSecurityModal}
+        onClose={() => setShowSecurityModal(false)}
+        userEmail={user.email}
+      />
     </div>
   );
 };

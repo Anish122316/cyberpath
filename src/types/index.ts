@@ -223,6 +223,7 @@ export interface CareerReadinessReport {
   calculationVersion: string;
   targetRole: TargetRole;
   overallReadinessScore: number | null; // null if insufficient data
+  confidenceFactor: number;
   isSufficientData: boolean;
   missingDataReasons: string[];
   dimensions: {

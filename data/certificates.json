@@ -1,0 +1,20 @@
+[
+  {
+    "certId": "CYBERPATH-CERT-77A912F4",
+    "issueDate": "2026-03-15",
+    "recipientId": "usr-guest",
+    "recipientName": "Cybersecurity Trainee",
+    "trackTitle": "Cybersecurity Defense Specialist",
+    "standardsCompliant": "NICE Framework & OWASP Aligned",
+    "signature": "7fc6bb6cb202f93ea2ba9283e315878d01045c2d38f7d1dac25bbc40d8b60cef"
+  },
+  {
+    "certId": "CYBERPATH-CERT-9F9F28E8",
+    "issueDate": "2026-09-26",
+    "recipientId": "usr-alice-101",
+    "recipientName": "Alice Smith",
+    "trackTitle": "Penetration Tester",
+    "standardsCompliant": "NICE Framework & OWASP Aligned",
+    "signature": "4c8db9f275b2b8e4a412bb0347e591a4009ec3927cb021189b9031324acda260"
+  }
+]

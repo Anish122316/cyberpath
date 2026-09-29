@@ -359,13 +359,13 @@ export const AssessmentView: React.FC<AssessmentViewProps> = ({
 
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
             <button
-              onClick={() => onNavigate('LEARNING')}
+              onClick={() => onNavigate('learning')}
               className="w-full sm:w-auto px-6 py-2.5 rounded bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs font-mono transition-colors"
             >
               Proceed to Curriculum Lessons
             </button>
             <button
-              onClick={() => onNavigate('CHALLENGES')}
+              onClick={() => onNavigate('challenges')}
               className="w-full sm:w-auto px-6 py-2.5 rounded bg-[#161b22] hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs font-mono transition-colors"
             >
               Enter CTF Flag Capture Arena

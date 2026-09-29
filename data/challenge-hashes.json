@@ -1,0 +1,362 @@
+{
+  "ch-net-01": {
+    "title": "SYN Anomaly & Port Discovery",
+    "category": "Networking",
+    "difficulty": "Beginner",
+    "rawFlag": "CYBERPATH{syn_st34lth_sc4n_d1sc0v3r3d}",
+    "flagHash": "edebeb15b32bf39ad0f2f0183ff4c8aa3d055711ec72baee1fb3bd2ff9089e71",
+    "baseXp": 100,
+    "starsReward": 1,
+    "associatedSkillId": "networking"
+  },
+  "ch-net-02": {
+    "title": "Pcap Dissection & Cleartext Credential Extraction",
+    "category": "Networking",
+    "difficulty": "Intermediate",
+    "rawFlag": "CYBERPATH{pcap_ftp_cr3ds_3xtr4ct3d}",
+    "flagHash": "2a4fd550c2dff26c30d826daaa0781bb04a2edfd7d9d83a1120ce01504072f0d",
+    "baseXp": 160,
+    "starsReward": 1,
+    "associatedSkillId": "networking"
+  },
+  "ch-net-03": {
+    "title": "DNS Tunneling & Base64 Exfiltration Detection",
+    "category": "Networking",
+    "difficulty": "Advanced",
+    "rawFlag": "CYBERPATH{dns_tunn3l_d0m41n_3xf1ltr4t10n}",
+    "flagHash": "af1cacf76256b03291e78d8065f3612ec9bfea263cbb1d6d58359dd6aa7251d3",
+    "baseXp": 240,
+    "starsReward": 2,
+    "associatedSkillId": "networking"
+  },
+  "ch-net-04": {
+    "title": "BGP Prefix Hijacking & Autonomous System Interception",
+    "category": "Networking",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{bgp_pr3f1x_h1j4ck_d3f34t3d}",
+    "flagHash": "b9a2bc22557a433d719831145cd9ee4ef64c0f725c588549bbca939a8834fa33",
+    "baseXp": 350,
+    "starsReward": 3,
+    "associatedSkillId": "networking"
+  },
+  "ch-linux-01": {
+    "title": "The SUID Misconfiguration",
+    "category": "Linux",
+    "difficulty": "Intermediate",
+    "rawFlag": "CYBERPATH{su1d_pr1v_3sc4l4t10n_m4st3r}",
+    "flagHash": "17f0fdae8b4754f5476040f23828fb3f2a4772eeff1147d25728011362f19357",
+    "baseXp": 150,
+    "starsReward": 1,
+    "associatedSkillId": "linux"
+  },
+  "ch-linux-02": {
+    "title": "Wildcard Injection & Tar Cronjob Escalation",
+    "category": "Linux",
+    "difficulty": "Advanced",
+    "rawFlag": "CYBERPATH{t4r_w1ldc4rd_ch3ckp01nt_r00t}",
+    "flagHash": "8ee5f14bc0f16c0dd77ba05c7097b74b77a88fb4e11e1303153cdf8ca79e0d28",
+    "baseXp": 250,
+    "starsReward": 2,
+    "associatedSkillId": "linux"
+  },
+  "ch-linux-03": {
+    "title": "LD_PRELOAD Shared Object Hooking & Persistence",
+    "category": "Linux",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{ld_pr3l04d_sh4r3d_0bj3ct_pwn}",
+    "flagHash": "d6165b05031cb2592f0c29db181e35cff27233339378652e4f0119bcddbee1ca",
+    "baseXp": 380,
+    "starsReward": 3,
+    "associatedSkillId": "linux"
+  },
+  "ch-web-01": {
+    "title": "Authentication Bypass via SQLi",
+    "category": "Web Security",
+    "difficulty": "Intermediate",
+    "rawFlag": "CYBERPATH{sql_1nj3ct10n_byp4ss_s3cur3d}",
+    "flagHash": "d57ffa200cc9a5c056d64ba38b04b3c285ad2bfb7af2084d29235132803f3c69",
+    "baseXp": 200,
+    "starsReward": 1,
+    "associatedSkillId": "web-security"
+  },
+  "ch-web-02": {
+    "title": "JWT Algorithm Confusion (alg: none) & Role Escalation",
+    "category": "Web Security",
+    "difficulty": "Advanced",
+    "rawFlag": "CYBERPATH{jwt_n0n3_4lg_byp4ss_succ3ss}",
+    "flagHash": "2d1757d5e188140f76263ad2e85f422b754149b4d897b4e6ffc3996e61cdbaff",
+    "baseXp": 280,
+    "starsReward": 2,
+    "associatedSkillId": "web-security"
+  },
+  "ch-web-03": {
+    "title": "Blind SSRF with IMDSv2 Token Pivot & Cloud Exfil",
+    "category": "Web Security",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{ssrf_1mdsv2_cl0ud_cr3ds_p1v0t}",
+    "flagHash": "bfa867a742afaeb711ddb8149329d60d1c02cb6e3003931b447cc1e0d80bcf1b",
+    "baseXp": 400,
+    "starsReward": 4,
+    "associatedSkillId": "web-security"
+  },
+  "ch-soc-01": {
+    "title": "SIEM Log Triage: The Cobalt Beacons",
+    "category": "SOC & Logs",
+    "difficulty": "Intermediate",
+    "rawFlag": "CYBERPATH{c2_b34c0n_d3t3ct3d_1n_l0gs}",
+    "flagHash": "21a6fe5abba3a7bc7c46f27143b87d0e18f5a20141b3dd80a1c2a3bf6283d158",
+    "baseXp": 180,
+    "starsReward": 1,
+    "associatedSkillId": "blue-team"
+  },
+  "ch-soc-02": {
+    "title": "Memory Forensics: Volatility 3 Process Injection Analysis",
+    "category": "SOC & Logs",
+    "difficulty": "Advanced",
+    "rawFlag": "CYBERPATH{v0l4t1l1ty_m4lf1nd_1nj3ct10n_f0und}",
+    "flagHash": "be4e2062577cec3aec4417ff077ab9dfd39ddb6e764a4ccad474160d2050731e",
+    "baseXp": 270,
+    "starsReward": 2,
+    "associatedSkillId": "blue-team"
+  },
+  "ch-soc-03": {
+    "title": "Active Directory Kerberoasting & KRBTGT Ticket Defense",
+    "category": "SOC & Logs",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{krbtgt_g0ld3n_t1ck3t_d0m41n_pwn}",
+    "flagHash": "c8709dcf1c021b7e94b2cbbc837a6c839fbc3050ad61579356274fbf3f994fa1",
+    "baseXp": 420,
+    "starsReward": 4,
+    "associatedSkillId": "blue-team"
+  },
+  "ch-crypto-01": {
+    "title": "Padding Oracle Decryption (AES-CBC Mode)",
+    "category": "Cryptography",
+    "difficulty": "Intermediate",
+    "rawFlag": "CYBERPATH{cbc_p4dd1ng_0r4cl3_d3crypt3d}",
+    "flagHash": "82615d761bfa961a5c30f730090137940a4b37b06dd962bc9ea65f5c43226a03",
+    "baseXp": 190,
+    "starsReward": 1,
+    "associatedSkillId": "fundamentals"
+  },
+  "ch-crypto-02": {
+    "title": "Weak Key RSA Modulus Factorization",
+    "category": "Cryptography",
+    "difficulty": "Advanced",
+    "rawFlag": "CYBERPATH{sm4ll_pr1m3_rs4_f4ct0r3d}",
+    "flagHash": "128bb17329efda6e113ae1ca04c363cab78e4a1b62d1f4f34f949ab1d456ae02",
+    "baseXp": 250,
+    "starsReward": 2,
+    "associatedSkillId": "fundamentals"
+  },
+  "ch-crypto-03": {
+    "title": "Elliptic Curve Nonce Reuse (ECDSA Key Recovery)",
+    "category": "Cryptography",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{3cdsa_n0nc3_r3us3_k3y_r3c0v3r3d}",
+    "flagHash": "4629d4620c672fda453a403e143faa09d4620e219f37a71a89923a509e92c56f",
+    "baseXp": 450,
+    "starsReward": 4,
+    "associatedSkillId": "fundamentals"
+  },
+  "ch-crypto-06": {
+    "title": "Polyalphabetic Vigenère Cipher & Kasiski Frequency Analysis",
+    "category": "Cryptography",
+    "difficulty": "Beginner",
+    "rawFlag": "CYBERPATH{v1g3n3r3_p0ly4lph4b3t1c_cr4ck3d}",
+    "flagHash": "6713df8e32c276118a78ea8bfa3a720ed297d4221ff4d333d751f0d32783d6a2",
+    "baseXp": 110,
+    "starsReward": 1,
+    "associatedSkillId": "fundamentals"
+  },
+  "ch-crypto-07": {
+    "title": "Two-Time Pad: XOR Keystream Reuse & Crib Dragging",
+    "category": "Cryptography",
+    "difficulty": "Beginner",
+    "rawFlag": "CYBERPATH{x0r_tw0_t1m3_p4d_c4nc3ll3d}",
+    "flagHash": "f91472c44cb03cfcda88e0dab33f49f1f775de832c019315555372eab4402bb0",
+    "baseXp": 130,
+    "starsReward": 1,
+    "associatedSkillId": "fundamentals"
+  },
+  "ch-crypto-08": {
+    "title": "Hash Length Extension Attack (MD5 / SHA-256 Secret Prefix MAC)",
+    "category": "Cryptography",
+    "difficulty": "Intermediate",
+    "rawFlag": "CYBERPATH{l3ngth_3xt3ns10n_m4c_f0rg3ry_pwn}",
+    "flagHash": "76d26146926bc63b8c90435c37c1fd420292a90202c6093cc11f48abd6b0dd4f",
+    "baseXp": 210,
+    "starsReward": 1,
+    "associatedSkillId": "fundamentals"
+  },
+  "ch-crypto-09": {
+    "title": "JWT Cryptographic Key Confusion (RS256 to HS256 Public Key Exploit)",
+    "category": "Cryptography",
+    "difficulty": "Intermediate",
+    "rawFlag": "CYBERPATH{jwt_k3y_c0nfus10n_rs256_t0_hs256}",
+    "flagHash": "5f72cda14dc223c03525f17ffc415a15947ee69c9f0cb88a39415c30ea9f30a7",
+    "baseXp": 230,
+    "starsReward": 2,
+    "associatedSkillId": "fundamentals"
+  },
+  "ch-crypto-10": {
+    "title": "Diffie-Hellman Small Subgroup Confinement Attack",
+    "category": "Cryptography",
+    "difficulty": "Advanced",
+    "rawFlag": "CYBERPATH{dh_sm4ll_subgr0up_c0nf1n3m3nt}",
+    "flagHash": "f63d85de43bfee4265652f5e67c5b4fcdeb7614f4a96fd019f830a52d05d5014",
+    "baseXp": 320,
+    "starsReward": 3,
+    "associatedSkillId": "fundamentals"
+  },
+  "ch-crypto-11": {
+    "title": "AES-GCM Nonce Reuse & GHASH Authentication Key Recovery",
+    "category": "Cryptography",
+    "difficulty": "Advanced",
+    "rawFlag": "CYBERPATH{gcm_n0nc3_r3us3_gh4sh_f0rg3ry}",
+    "flagHash": "fc5ab1d6a6ebcaf52d21fa1b8ca5a02e8ed06c761494c8ea9c0e96583e3332c0",
+    "baseXp": 360,
+    "starsReward": 3,
+    "associatedSkillId": "fundamentals"
+  },
+  "ch-crypto-12": {
+    "title": "Post-Quantum Cryptography: LWE Lattice Reduction & Decryption",
+    "category": "Cryptography",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{lwe_l4tt1c3_lll_r3duct10n_pqc}",
+    "flagHash": "7dc068cfd51574b0d83f383564e07a422e41ad004349615e4d8031f620605c68",
+    "baseXp": 490,
+    "starsReward": 5,
+    "associatedSkillId": "fundamentals"
+  },
+  "ch-cloud-01": {
+    "title": "AWS S3 Bucket Permission Audit",
+    "category": "Cloud Security",
+    "difficulty": "Intermediate",
+    "rawFlag": "CYBERPATH{s3_publ1c_bucck3t_l34k_f1x3d}",
+    "flagHash": "241c9d1ba2e0b23414214d6b2539112d5fe2f61cce9342bb96d3cdb925a9e6cc",
+    "baseXp": 175,
+    "starsReward": 1,
+    "associatedSkillId": "cloud"
+  },
+  "ch-cloud-02": {
+    "title": "IAM Privilege Escalation via AssumeRole & Policy Chaining",
+    "category": "Cloud Security",
+    "difficulty": "Advanced",
+    "rawFlag": "CYBERPATH{14m_4ssum3_r0l3_p0l1cy_ch41n3d}",
+    "flagHash": "2b3300836b8c58653e2416029c52ec84f26462acd1a34401e3ad2331d8093e63",
+    "baseXp": 290,
+    "starsReward": 2,
+    "associatedSkillId": "cloud"
+  },
+  "ch-cloud-03": {
+    "title": "Kubernetes RBAC Escape & Node Socket Container Breakout",
+    "category": "Cloud Security",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{k8s_c0nt41n3r_3sc4p3_h0st_s0ck3t}",
+    "flagHash": "1010e4562901e6f71f9f805d7cc8caadf1bd4ca85575eb88a45dab00b4d4aefc",
+    "baseXp": 440,
+    "starsReward": 4,
+    "associatedSkillId": "cloud"
+  },
+  "ch-linux-04": {
+    "title": "Linux Kernel eBPF Map Verifier Bypass & Ring-0 Privilege Escalation",
+    "category": "Linux",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{ebpf_k3rn3l_v3r1f13r_pr1v_3sc}",
+    "flagHash": "aa8422fa0b7a521f322bfae8ae862ca805ff499eba89af7666a3ef902a86047a",
+    "baseXp": 480,
+    "starsReward": 5,
+    "associatedSkillId": "linux"
+  },
+  "ch-bin-01": {
+    "title": "Heap Exploitation: Fastbin Dup & Glibc __free_hook Shell Hijack",
+    "category": "Linux",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{h34p_f4stb1n_dup_fr33_h00k_pwn}",
+    "flagHash": "36565d4fbd4091c336be10cbf100b35478ccc608928524433033aac6e324990e",
+    "baseXp": 470,
+    "starsReward": 5,
+    "associatedSkillId": "linux"
+  },
+  "ch-web-04": {
+    "title": "Java Insecure Deserialization & ysoserial CommonsCollections Gadget RCE",
+    "category": "Web Security",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{j4v4_d3s3r14l1z4t10n_ys0s3r14l_rc3}",
+    "flagHash": "d6600f060f9b08df472adaab8263d47e95187d67ecddaae4bb85b9d0204cead0",
+    "baseXp": 460,
+    "starsReward": 4,
+    "associatedSkillId": "web-security"
+  },
+  "ch-web-05": {
+    "title": "GraphQL Batching Race Condition & Multi-Factor Auth Bypass",
+    "category": "Web Security",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{gr4phql_b4tch_r4c3_c0nd1t10n_0tp}",
+    "flagHash": "8922b6808ed70942ddecc0f2b62049059285487bf31ed95bf74c67c92b8206c5",
+    "baseXp": 430,
+    "starsReward": 4,
+    "associatedSkillId": "web-security"
+  },
+  "ch-soc-04": {
+    "title": "Active Directory DCSync Attack & Shadow Credentials (msDS-KeyCredentialLink)",
+    "category": "SOC & Logs",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{dcsync_msdrsr_r3pl1c4t10n_pwn3d}",
+    "flagHash": "d3ab4b500781152a59757ecca9ee93d8f997c6da8b21c283c0c03e852dc12af5",
+    "baseXp": 470,
+    "starsReward": 5,
+    "associatedSkillId": "blue-team"
+  },
+  "ch-soc-05": {
+    "title": "Fileless WMI Event Subscription Persistence & CIM Repository Forensics",
+    "category": "SOC & Logs",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{wm1_p3rs1st3nc3_f1l3l3ss_3v3nt_sub}",
+    "flagHash": "2b9aaf959ac798529c8f0986d59ed9e33521f902fb0fee1e3eebcd044cd8e293",
+    "baseXp": 450,
+    "starsReward": 4,
+    "associatedSkillId": "blue-team"
+  },
+  "ch-crypto-04": {
+    "title": "Bleichenbacher Million-Message Adaptive Chosen-Ciphertext RSA Attack",
+    "category": "Cryptography",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{bl31ch3nb4ch3r_m1ll10n_msg_0r4cl3}",
+    "flagHash": "2d1221a852b41bf68389ce0f0ae3d2b6d4d461fd5589e04dcd2c3b0229f556fe",
+    "baseXp": 480,
+    "starsReward": 5,
+    "associatedSkillId": "fundamentals"
+  },
+  "ch-crypto-05": {
+    "title": "Fault Injection & Differential Fault Analysis (DFA) on AES-128",
+    "category": "Cryptography",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{43s_d1ff3r3nt14l_f4ult_4n4lys1s_k3y}",
+    "flagHash": "4843b910069c79a1958ea46c450e1a75fc99dbdfda045250a49528f873a45060",
+    "baseXp": 470,
+    "starsReward": 5,
+    "associatedSkillId": "fundamentals"
+  },
+  "ch-cloud-04": {
+    "title": "GCP Workload Identity Federation & GitHub Actions OIDC Claim Bypass",
+    "category": "Cloud Security",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{gcp_w0rkl04d_1d3nt1ty_01dc_fl4w}",
+    "flagHash": "1bbc842b2add00cc57b7816db7545c1c76fb531a51d22b94731fca0e8f8ebb21",
+    "baseXp": 460,
+    "starsReward": 4,
+    "associatedSkillId": "cloud"
+  },
+  "ch-net-05": {
+    "title": "DNSSEC NSEC3 Cryptographic Zone Walking & Salt Hash Reversal",
+    "category": "Networking",
+    "difficulty": "Expert",
+    "rawFlag": "CYBERPATH{dnsz0n3_ns3c3_cr4ck3d_3num}",
+    "flagHash": "830c30ec3713ad94ca5a713f907c5af7d7cd003cab7dfcc2c4d640c195f29f08",
+    "baseXp": 450,
+    "starsReward": 4,
+    "associatedSkillId": "networking"
+  }
+}

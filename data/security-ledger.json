@@ -1,0 +1,44 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2026-09-29T00:00:00.000Z",
+    "eventType": "GENESIS_SECURITY_ANCHOR",
+    "details": {
+      "message": "CyberPath Cryptographic Security & Data Protection Ledger Initialized",
+      "consensus": "Proof-of-Integrity-v2",
+      "hashingAlgorithm": "SHA-256",
+      "dataSecurityStandard": "NIST SP 800-53 / OWASP Top 10 Hardened"
+    },
+    "ipHash": "0000000000000000",
+    "prevHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "index": 1,
+    "timestamp": "2026-09-29T11:19:38.008Z",
+    "eventType": "FLAG_VERIFICATION_SUCCESS",
+    "details": {
+      "challengeId": "ch-crypto-06",
+      "title": "Polyalphabetic Vigenère Cipher & Kasiski Frequency Analysis",
+      "category": "Cryptography",
+      "difficulty": "Beginner",
+      "baseXp": 110,
+      "starsReward": 1
+    },
+    "ipHash": "b8db1093ebbb36b7",
+    "prevHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "hash": "14ddc9473a8e9ef9a87552f72af8f833da78ed966533311222ff3866ada2be91"
+  },
+  {
+    "index": 2,
+    "timestamp": "2026-09-29T11:19:45.694Z",
+    "eventType": "FLAG_VERIFICATION_FAILED",
+    "details": {
+      "challengeId": "ch-crypto-06",
+      "reason": "Cryptographic hash mismatch"
+    },
+    "ipHash": "b8db1093ebbb36b7",
+    "prevHash": "14ddc9473a8e9ef9a87552f72af8f833da78ed966533311222ff3866ada2be91",
+    "hash": "db90fb61ba2dcca5c406f64b82f88b6e8644a3d49e0dc39b87660742e54f84ee"
+  }
+]

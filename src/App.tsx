@@ -14,6 +14,12 @@ import { InterviewView } from './components/views/InterviewView';
 import { AssessmentView } from './components/views/AssessmentView';
 import { CertificateView } from './components/views/CertificateView';
 import { GoogleAuthModal } from './components/auth/GoogleAuthModal';
+import { SecurityPostureModal } from './components/views/SecurityPostureModal';
+import {
+  computeClientHmac,
+  loadSecureProfileState,
+  logSecurityEvent
+} from './services/securityService';
 
 import {
   ATSAnalysisResult,
@@ -146,6 +152,7 @@ const getSkillIdForLesson = (lessonId: string): string => {
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('landing');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState<boolean>(false);
   const [recentNotification, setRecentNotification] = useState<string | null>(null);
 
   // User Profile State initialized cleanly
@@ -189,20 +196,40 @@ export default function App() {
     analyzeResumeATS(SAMPLE_RESUMES.SOC_ANALYST, 'SOC Analyst')
   );
 
-  // Sync state to localStorage whenever user or skills update
+  // Sync state to localStorage whenever user or skills update with cryptographic HMAC tamper-evident signature
   useEffect(() => {
     try {
       if (user.isLoggedIn && user.email) {
         localStorage.setItem('cyberpath_active_email', user.email);
-        localStorage.setItem(
-          `cyberpath_user_${user.email}`,
-          JSON.stringify({ user, skills })
-        );
+        const payloadToSign = JSON.stringify(user);
+        computeClientHmac(payloadToSign).then((hmacSignature) => {
+          localStorage.setItem(
+            `cyberpath_user_${user.email}`,
+            JSON.stringify({
+              user,
+              skills,
+              hmacSignature,
+              version: '2.0.0',
+              lastSecured: new Date().toISOString(),
+            })
+          );
+        });
       }
     } catch {
       // safe fallback
     }
   }, [user, skills]);
+
+  // Startup Tamper-Evident Integrity Verification
+  useEffect(() => {
+    if (user.isLoggedIn && user.email) {
+      loadSecureProfileState(user.email).then((status) => {
+        if (status.integrityStatus === 'TAMPERED') {
+          notifyLedger('SECURITY ALERT: LocalStorage cryptographic signature mismatch. Tamper warning recorded.');
+        }
+      });
+    }
+  }, [user.email, user.isLoggedIn]);
 
   // Flash notification helper
   const notifyLedger = (message: string) => {
@@ -226,8 +253,8 @@ export default function App() {
 
   // Handler: Account Sign-in Success (Personal Email or Google)
   const handleGoogleLoginSuccess = (profile: Partial<UserProfile>) => {
-    const email = profile.email || 'anishkr649world@gmail.com';
-    const name = profile.name || 'Learner';
+    const email = profile.email || 'learner@cyberpath.dev';
+    const name = profile.name || (email.includes('@') ? email.split('@')[0] : 'Learner');
 
     try {
       const savedData = localStorage.getItem(`cyberpath_user_${email}`);
@@ -324,6 +351,11 @@ export default function App() {
     }
 
     if (rawFlagInput.trim() !== challenge.rawFlag.trim()) {
+      logSecurityEvent('FLAG_SUBMISSION_REJECTED', {
+        challengeId,
+        userEmail: user.email,
+        reason: 'Hash mismatch or wrong format',
+      });
       return { success: false, message: 'Incorrect flag. Check format: CYBERPATH{...}' };
     }
 
@@ -335,6 +367,15 @@ export default function App() {
       stars: prev.stars + challenge.starsReward,
       solvedChallenges: [...prev.solvedChallenges, challengeId],
     }));
+
+    logSecurityEvent('FLAG_SUBMISSION_ACCEPTED', {
+      challengeId,
+      userEmail: user.email,
+      title: challenge.title,
+      category: challenge.category,
+      earnedXp,
+      stars: challenge.starsReward,
+    });
 
     // Update corresponding skill dynamically
     if (challenge.associatedSkillId) {
@@ -527,6 +568,7 @@ export default function App() {
         onOpenGoogleAuth={() => setIsAuthModalOpen(true)}
         onLogout={handleLogout}
         onResetProgress={handleResetProgress}
+        onOpenSecurityModal={() => setIsSecurityModalOpen(true)}
       />
 
       {/* Real-time Ledger Notification Toast */}
@@ -616,6 +658,13 @@ export default function App() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onLoginSuccess={handleGoogleLoginSuccess}
+      />
+
+      {/* Application Security & Cryptographic Ledger Modal */}
+      <SecurityPostureModal
+        isOpen={isSecurityModalOpen}
+        onClose={() => setIsSecurityModalOpen(false)}
+        userEmail={user.email}
       />
     </div>
   );
